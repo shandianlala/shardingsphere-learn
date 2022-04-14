@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:shardingsphere="http://shardingsphere.apache.org/schema/shardingsphere/datasource"
+       xmlns:standalone="http://shardingsphere.apache.org/schema/shardingsphere/mode-repository/standalone"
+       xmlns:readwrite-splitting="http://shardingsphere.apache.org/schema/shardingsphere/readwrite-splitting"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+                           http://www.springframework.org/schema/beans/spring-beans.xsd
+                           http://shardingsphere.apache.org/schema/shardingsphere/datasource
+                           http://shardingsphere.apache.org/schema/shardingsphere/datasource/datasource.xsd
+                           http://shardingsphere.apache.org/schema/shardingsphere/mode-repository/standalone
+                           http://shardingsphere.apache.org/schema/shardingsphere/mode-repository/standalone/repository.xsd http://shardingsphere.apache.org/schema/shardingsphere/readwrite-splitting http://shardingsphere.apache.org/schema/shardingsphere/readwrite-splitting/readwrite-splitting.xsd">
+
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="shardingDataSource"/>
+        <property name="mapperLocations" value="classpath:mapper/*Mapper.xml"/>
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+    </bean>
+
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="club.sdll.ptc.sharding.dao.mapper"/>
+    </bean>
+
+    <bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="shardingDataSource"/>
+    </bean>
+
+
+
+    <standalone:repository id="standaloneRepository" type="File">
+        <props>
+            <prop key="path">target</prop>
+        </props>
+    </standalone:repository>
+
+    <bean id="sdllMasterDatasource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3310/sdll-db"/>
+        <property name="username" value="root"/>
+        <property name="password" value="123456"/>
+    </bean>
+
+    <bean id="sdllSlaveDatasource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3311/sdll-db"/>
+        <property name="username" value="root"/>
+        <property name="password" value="123456"/>
+    </bean>
+
+
+    <readwrite-splitting:load-balance-algorithm id="loadBalanceAlgorithm" type="ROUND_ROBIN"/>
+    <readwrite-splitting:rule id="readWriteRule">
+        <readwrite-splitting:data-source-rule id="dataSourceRule" type="Static" load-balance-algorithm-ref="loadBalanceAlgorithm">
+            <props>
+                <prop key="write-data-source-name">sdllMasterDatasource</prop>
+                <prop key="read-data-source-names">sdllSlaveDatasource</prop>
+            </props>
+        </readwrite-splitting:data-source-rule>
+    </readwrite-splitting:rule>
+
+    <shardingsphere:data-source id="shardingDataSource" schema-name="foo_schema" data-source-names="sdllMasterDatasource,sdllSlaveDatasource" rule-refs="readWriteRule" >
+        <shardingsphere:mode type="Standalone" repository-ref="standaloneRepository" overwrite="true" />
+    </shardingsphere:data-source>
+
+</beans>

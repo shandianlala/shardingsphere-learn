@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="club.sdll.ptc.sharding.dao.mapper.StorageBucketRuleDOMapper">
+  <resultMap id="BaseResultMap" type="club.sdll.ptc.sharding.dao.entity.StorageBucketRuleDO">
+    <id column="id" jdbcType="BIGINT" property="id" />
+    <result column="tenant_id" jdbcType="VARCHAR" property="tenantId" />
+    <result column="storage_day" jdbcType="INTEGER" property="storageDay" />
+    <result column="file_type" jdbcType="VARCHAR" property="fileType" />
+    <result column="storage_account_id" jdbcType="BIGINT" property="storageAccountId" />
+    <result column="ext_info" jdbcType="VARCHAR" property="extInfo" />
+    <result column="is_deleted" jdbcType="TINYINT" property="isDeleted" />
+    <result column="gmt_create" jdbcType="BIGINT" property="gmtCreate" />
+    <result column="gmt_modified" jdbcType="BIGINT" property="gmtModified" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, tenant_id, storage_day, file_type, storage_account_id, ext_info, is_deleted, 
+    gmt_create, gmt_modified
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from storage_bucket_rule
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+    delete from storage_bucket_rule
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="club.sdll.ptc.sharding.dao.entity.StorageBucketRuleDO">
+    insert into storage_bucket_rule (id, tenant_id, storage_day, 
+      file_type, storage_account_id, ext_info, 
+      is_deleted, gmt_create, gmt_modified
+      )
+    values (#{id,jdbcType=BIGINT}, #{tenantId,jdbcType=VARCHAR}, #{storageDay,jdbcType=INTEGER}, 
+      #{fileType,jdbcType=VARCHAR}, #{storageAccountId,jdbcType=BIGINT}, #{extInfo,jdbcType=VARCHAR}, 
+      #{isDeleted,jdbcType=TINYINT}, unix_timestamp() * 1000, unix_timestamp() * 1000
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="club.sdll.ptc.sharding.dao.entity.StorageBucketRuleDO">
+    insert into storage_bucket_rule
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="tenantId != null">
+        tenant_id,
+      </if>
+      <if test="storageDay != null">
+        storage_day,
+      </if>
+      <if test="fileType != null">
+        file_type,
+      </if>
+      <if test="storageAccountId != null">
+        storage_account_id,
+      </if>
+      <if test="extInfo != null">
+        ext_info,
+      </if>
+      <if test="isDeleted != null">
+        is_deleted,
+      </if>
+        gmt_create, gmt_modified,
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=BIGINT},
+      </if>
+      <if test="tenantId != null">
+        #{tenantId,jdbcType=VARCHAR},
+      </if>
+      <if test="storageDay != null">
+        #{storageDay,jdbcType=INTEGER},
+      </if>
+      <if test="fileType != null">
+        #{fileType,jdbcType=VARCHAR},
+      </if>
+      <if test="storageAccountId != null">
+        #{storageAccountId,jdbcType=BIGINT},
+      </if>
+      <if test="extInfo != null">
+        #{extInfo,jdbcType=VARCHAR},
+      </if>
+      <if test="isDeleted != null">
+        #{isDeleted,jdbcType=TINYINT},
+      </if>
+      unix_timestamp() * 1000, unix_timestamp() * 1000
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="club.sdll.ptc.sharding.dao.entity.StorageBucketRuleDO">
+    update storage_bucket_rule
+    <set>
+      <if test="tenantId != null">
+        tenant_id = #{tenantId,jdbcType=VARCHAR},
+      </if>
+      <if test="storageDay != null">
+        storage_day = #{storageDay,jdbcType=INTEGER},
+      </if>
+      <if test="fileType != null">
+        file_type = #{fileType,jdbcType=VARCHAR},
+      </if>
+      <if test="storageAccountId != null">
+        storage_account_id = #{storageAccountId,jdbcType=BIGINT},
+      </if>
+      <if test="extInfo != null">
+        ext_info = #{extInfo,jdbcType=VARCHAR},
+      </if>
+      <if test="isDeleted != null">
+        is_deleted = #{isDeleted,jdbcType=TINYINT},
+      </if>
+      <if test="gmtCreate != null">
+        gmt_create = #{gmtCreate,jdbcType=BIGINT},
+      </if>
+        gmt_modified = unix_timestamp() * 1000
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="club.sdll.ptc.sharding.dao.entity.StorageBucketRuleDO">
+    update storage_bucket_rule
+    set tenant_id = #{tenantId,jdbcType=VARCHAR},
+      storage_day = #{storageDay,jdbcType=INTEGER},
+      file_type = #{fileType,jdbcType=VARCHAR},
+      storage_account_id = #{storageAccountId,jdbcType=BIGINT},
+      ext_info = #{extInfo,jdbcType=VARCHAR},
+      is_deleted = #{isDeleted,jdbcType=TINYINT},
+      gmt_modified = unix_timestamp() * 1000
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+</mapper>
