@@ -9,10 +9,14 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import java.util.UUID;
 
 /**
+ *
+ * doc:https://shardingsphere.apache.org/document/current/cn/user-manual/shardingsphere-jdbc/spring-namespace/rules/readwrite-splitting/
+ *
  * Hello world!
  */
 @Slf4j
 public class App {
+
 
 
     public static void main(String[] args) {

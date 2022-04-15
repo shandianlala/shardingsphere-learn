@@ -61,6 +61,9 @@
 
     <shardingsphere:data-source id="shardingDataSource" schema-name="foo_schema" data-source-names="sdllMasterDatasource,sdllSlaveDatasource" rule-refs="readWriteRule" >
         <shardingsphere:mode type="Standalone" repository-ref="standaloneRepository" overwrite="true" />
+        <props>
+            <prop key="sql-show">true</prop>
+        </props>
     </shardingsphere:data-source>
 
 </beans>
