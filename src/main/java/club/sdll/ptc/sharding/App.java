@@ -31,7 +31,7 @@ public class App {
         temp.setFileType("PIC");
         temp.setStorageAccountId(1L);
         temp.setStorageDay(7);
-        temp.setTenantId("9527");
+        temp.setTenantId("1");
         temp.setExtInfo("{}");
         temp.setIsDeleted((byte) 0);
         int insert = storageBucketRuleDOMapper.insert(temp);

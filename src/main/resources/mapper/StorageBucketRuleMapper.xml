@@ -16,12 +16,20 @@
     id, tenant_id, storage_day, file_type, storage_account_id, ext_info, is_deleted, 
     gmt_create, gmt_modified
   </sql>
+
   <select id="selectByPrimaryKey" parameterType="java.lang.Long" resultMap="BaseResultMap">
     select 
     <include refid="Base_Column_List" />
     from storage_bucket_rule
     where id = #{id,jdbcType=BIGINT}
   </select>
+  <select id="selectByTenantIdAndId" resultMap="BaseResultMap">
+    select
+    <include refid="Base_Column_List" />
+    from storage_bucket_rule
+    where id = #{id,jdbcType=BIGINT} and tenant_id = #{tenantId,jdbcType=VARCHAR}
+  </select>
+
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
     delete from storage_bucket_rule
     where id = #{id,jdbcType=BIGINT}

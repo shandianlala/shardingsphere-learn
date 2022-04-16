@@ -4,12 +4,13 @@
        xmlns:shardingsphere="http://shardingsphere.apache.org/schema/shardingsphere/datasource"
        xmlns:standalone="http://shardingsphere.apache.org/schema/shardingsphere/mode-repository/standalone"
        xmlns:readwrite-splitting="http://shardingsphere.apache.org/schema/shardingsphere/readwrite-splitting"
+       xmlns:sharding="http://shardingsphere.apache.org/schema/shardingsphere/sharding"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
                            http://www.springframework.org/schema/beans/spring-beans.xsd
                            http://shardingsphere.apache.org/schema/shardingsphere/datasource
                            http://shardingsphere.apache.org/schema/shardingsphere/datasource/datasource.xsd
                            http://shardingsphere.apache.org/schema/shardingsphere/mode-repository/standalone
-                           http://shardingsphere.apache.org/schema/shardingsphere/mode-repository/standalone/repository.xsd http://shardingsphere.apache.org/schema/shardingsphere/readwrite-splitting http://shardingsphere.apache.org/schema/shardingsphere/readwrite-splitting/readwrite-splitting.xsd">
+                           http://shardingsphere.apache.org/schema/shardingsphere/mode-repository/standalone/repository.xsd http://shardingsphere.apache.org/schema/shardingsphere/readwrite-splitting http://shardingsphere.apache.org/schema/shardingsphere/readwrite-splitting/readwrite-splitting.xsd http://shardingsphere.apache.org/schema/shardingsphere/sharding http://shardingsphere.apache.org/schema/shardingsphere/sharding/sharding.xsd">
 
 
     <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
@@ -34,32 +35,78 @@
         </props>
     </standalone:repository>
 
-    <bean id="sdllMasterDatasource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+    <!-- 主从：sdll-db_0 -->
+    <bean id="sdll_master_0" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="jdbcUrl" value="jdbc:mysql://localhost:3310/sdll-db"/>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3310/sdll-db_0"/>
+        <property name="username" value="root"/>
+        <property name="password" value="123456"/>
+    </bean>
+    <bean id="sdll_slave_0" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3311/sdll-db_0"/>
         <property name="username" value="root"/>
         <property name="password" value="123456"/>
     </bean>
 
-    <bean id="sdllSlaveDatasource" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+    <!-- 主从：sdll-db_1 -->
+    <bean id="sdll_master_1" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
         <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
-        <property name="jdbcUrl" value="jdbc:mysql://localhost:3311/sdll-db"/>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3312/sdll-db_1"/>
+        <property name="username" value="root"/>
+        <property name="password" value="123456"/>
+    </bean>
+    <bean id="sdll_slave_1" class="com.zaxxer.hikari.HikariDataSource" destroy-method="close">
+        <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+        <property name="jdbcUrl" value="jdbc:mysql://localhost:3313/sdll-db_1"/>
         <property name="username" value="root"/>
         <property name="password" value="123456"/>
     </bean>
 
-
+    <!-- 读写分离 -->
     <readwrite-splitting:load-balance-algorithm id="loadBalanceAlgorithm" type="ROUND_ROBIN"/>
     <readwrite-splitting:rule id="readWriteRule">
-        <readwrite-splitting:data-source-rule id="dataSourceRule" type="Static" load-balance-algorithm-ref="loadBalanceAlgorithm">
+        <readwrite-splitting:data-source-rule id="dataSourceRule_0" type="Static" load-balance-algorithm-ref="loadBalanceAlgorithm">
             <props>
-                <prop key="write-data-source-name">sdllMasterDatasource</prop>
-                <prop key="read-data-source-names">sdllSlaveDatasource</prop>
+                <prop key="write-data-source-name">sdll_master_0</prop>
+                <prop key="read-data-source-names">sdll_slave_0</prop>
+            </props>
+        </readwrite-splitting:data-source-rule>
+        <readwrite-splitting:data-source-rule id="dataSourceRule_1" type="Static" load-balance-algorithm-ref="loadBalanceAlgorithm">
+            <props>
+                <prop key="write-data-source-name">sdll_master_1</prop>
+                <prop key="read-data-source-names">sdll_slave_1</prop>
             </props>
         </readwrite-splitting:data-source-rule>
     </readwrite-splitting:rule>
 
-    <shardingsphere:data-source id="shardingDataSource" schema-name="foo_schema" data-source-names="sdllMasterDatasource,sdllSlaveDatasource" rule-refs="readWriteRule" >
+    <!-- 分库分表规则 -->
+    <!-- 分片算法 -->
+    <sharding:sharding-algorithm  id="databaseAlgorithm" type="CLASS_BASED">
+        <props>
+            <prop key="strategy">STANDARD</prop>
+            <prop key="algorithmClassName">club.sdll.ptc.sharding.config.DatabaseShardingAlgorithm</prop>
+        </props>
+    </sharding:sharding-algorithm>
+    <sharding:sharding-algorithm  id="tableAlgorithm" type="CLASS_BASED">
+        <props>
+            <prop key="strategy">STANDARD</prop>
+            <prop key="algorithmClassName">club.sdll.ptc.sharding.config.TableShardingAlgorithm</prop>
+        </props>
+    </sharding:sharding-algorithm>
+    <!-- 分片策略 -->
+    <sharding:standard-strategy id="databaseStrategy" algorithm-ref="databaseAlgorithm" sharding-column="tenant_id"/>
+    <sharding:standard-strategy id="tableStrategy" algorithm-ref="tableAlgorithm" sharding-column="tenant_id"/>
+    <!-- 分片规则 -->
+    <sharding:rule id="shardingRule" >
+        <sharding:table-rules>
+            <!-- 库：sdll-db_$->{0..1}  -->
+            <!-- 表：storage_bucket_rule_$->{0..3}  -->
+            <sharding:table-rule logic-table="storage_bucket_rule" actual-data-nodes="dataSourceRule_$->{0..1}.storage_bucket_rule_$->{0..3}" database-strategy-ref="databaseStrategy" table-strategy-ref="tableStrategy"/>
+        </sharding:table-rules>
+    </sharding:rule>
+
+    <shardingsphere:data-source id="shardingDataSource" schema-name="foo_schema" data-source-names="sdll_master_0,sdll_slave_0,sdll_master_1,sdll_slave_1" rule-refs="readWriteRule,shardingRule" >
         <shardingsphere:mode type="Standalone" repository-ref="standaloneRepository" overwrite="true" />
         <props>
             <prop key="sql-show">true</prop>
