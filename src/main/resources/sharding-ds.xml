@@ -81,22 +81,42 @@
     </readwrite-splitting:rule>
 
     <!-- 分库分表规则 -->
-    <!-- 分片算法 -->
-    <sharding:sharding-algorithm  id="databaseAlgorithm" type="CLASS_BASED">
-        <props>
-            <prop key="strategy">STANDARD</prop>
-            <prop key="algorithmClassName">club.sdll.ptc.sharding.config.DatabaseShardingAlgorithm</prop>
-        </props>
-    </sharding:sharding-algorithm>
-    <sharding:sharding-algorithm  id="tableAlgorithm" type="CLASS_BASED">
-        <props>
-            <prop key="strategy">STANDARD</prop>
-            <prop key="algorithmClassName">club.sdll.ptc.sharding.config.TableShardingAlgorithm</prop>
-        </props>
-    </sharding:sharding-algorithm>
+    <!-- 一、standard分片算法 -->
+<!--    <sharding:sharding-algorithm  id="databaseAlgorithm" type="CLASS_BASED">-->
+<!--        <props>-->
+<!--            <prop key="strategy">STANDARD</prop>-->
+<!--            <prop key="algorithmClassName">club.sdll.ptc.sharding.config.DatabaseShardingAlgorithm</prop>-->
+<!--        </props>-->
+<!--    </sharding:sharding-algorithm>-->
+<!--    <sharding:sharding-algorithm  id="tableAlgorithm" type="CLASS_BASED">-->
+<!--        <props>-->
+<!--            <prop key="strategy">STANDARD</prop>-->
+<!--            <prop key="algorithmClassName">club.sdll.ptc.sharding.config.TableShardingAlgorithm</prop>-->
+<!--        </props>-->
+<!--    </sharding:sharding-algorithm>-->
     <!-- 分片策略 -->
-    <sharding:standard-strategy id="databaseStrategy" algorithm-ref="databaseAlgorithm" sharding-column="tenant_id"/>
-    <sharding:standard-strategy id="tableStrategy" algorithm-ref="tableAlgorithm" sharding-column="tenant_id"/>
+    <!--    <sharding:standard-strategy id="databaseStrategy" algorithm-ref="databaseAlgorithm" sharding-column="tenant_id"/>-->
+    <!--    <sharding:standard-strategy id="tableStrategy" algorithm-ref="tableAlgorithm" sharding-column="tenant_id"/>-->
+
+
+    <!-- 二、hint暗示分片算法 -->
+    <sharding:sharding-algorithm  id="databaseHintAlgorithm" type="CLASS_BASED">
+        <props>
+            <prop key="strategy">HINT</prop>
+            <prop key="algorithmClassName">club.sdll.ptc.sharding.config.hint.HintDatabaseShardingAlgorithm</prop>
+        </props>
+    </sharding:sharding-algorithm>
+    <sharding:sharding-algorithm  id="tableHintAlgorithm" type="CLASS_BASED">
+        <props>
+            <prop key="strategy">HINT</prop>
+            <prop key="algorithmClassName">club.sdll.ptc.sharding.config.hint.HintTableShardingAlgorithm</prop>
+        </props>
+    </sharding:sharding-algorithm>
+    <!--hint分片策略-->
+    <sharding:hint-strategy id="databaseStrategy" algorithm-ref="databaseHintAlgorithm" />
+    <sharding:hint-strategy id="tableStrategy" algorithm-ref="tableHintAlgorithm" />
+
+
     <!-- 分片规则 -->
     <sharding:rule id="shardingRule" >
         <sharding:table-rules>
